@@ -1,0 +1,5 @@
+{
+  "name": "OS Portfolio",
+  "description": "A modern portfolio site inspired by the Windows/MacOS file explorer UI, featuring an AI image generator to create and add new project assets.",
+  "requestFramePermissions": []
+}
