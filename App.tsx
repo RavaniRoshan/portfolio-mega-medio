@@ -15,6 +15,7 @@ const App: React.FC = () => {
   const [currentPath, setCurrentPath] = useState<string[]>(['root']);
   const [activeFile, setActiveFile] = useState<FileSystemItem | null>(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [expandedFolders, setExpandedFolders] = useState<string[]>(['root']);
 
   useEffect(() => {
     if (theme === 'dark') {
@@ -31,6 +32,12 @@ const App: React.FC = () => {
   const navigateTo = useCallback((path: string[]) => {
     setActiveFile(null);
     setCurrentPath(path);
+    // Also expand the folders in the path
+    setExpandedFolders(prev => {
+        const newExpanded = new Set(prev);
+        path.forEach(id => newExpanded.add(id));
+        return Array.from(newExpanded);
+    });
   }, []);
 
   const openFile = useCallback((file: FileSystemItem) => {
@@ -59,11 +66,20 @@ const App: React.FC = () => {
       const newFileSystem = JSON.parse(JSON.stringify(prevFileSystem));
       const parentDir = findItemByPath(currentPath, newFileSystem) as FileSystemItem & { children: FileSystemItem[] };
       if (parentDir && parentDir.type === FileType.FOLDER) {
+        if(!parentDir.children) parentDir.children = [];
         parentDir.children.push(newFile);
       }
       return newFileSystem;
     });
   }, [currentPath]);
+
+  const toggleFolder = useCallback((folderId: string) => {
+    setExpandedFolders(prev =>
+      prev.includes(folderId)
+        ? prev.filter(id => id !== folderId)
+        : [...prev, folderId]
+    );
+  }, []);
 
   const handleNavigateToProjects = () => navigateTo(['root', 'projects']);
   const handleOpenAboutFile = () => {
@@ -96,6 +112,8 @@ const App: React.FC = () => {
                 fileSystem={fileSystem}
                 currentPath={currentPath}
                 navigateTo={navigateTo}
+                expandedFolders={expandedFolders}
+                toggleFolder={toggleFolder}
               />
             </motion.div>
           )}
@@ -117,6 +135,7 @@ const App: React.FC = () => {
       <button 
         onClick={() => setIsSidebarOpen(!isSidebarOpen)} 
         className="md:hidden fixed bottom-4 left-4 z-50 p-2 rounded-full bg-black/20 backdrop-blur-sm text-white"
+        aria-label={isSidebarOpen ? "Close sidebar" : "Open sidebar"}
       >
         <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16m-7 6h7" />
