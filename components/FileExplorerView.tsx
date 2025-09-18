@@ -1,8 +1,7 @@
-
 import React from 'react';
 import { motion } from 'framer-motion';
 import { FileSystemItem, FileType } from '../types';
-import { FolderIcon, ProjectIcon, ImageIcon, TextIcon, AppIcon } from '../constants';
+import { FolderIcon, ProjectIcon, ImageIcon, TextIcon, AppIcon, CertificateIcon, MusicIcon } from '../constants';
 import { findItemByPath } from '../utils/fileSystemUtils';
 import { initialFileSystem } from '../constants';
 
@@ -19,6 +18,8 @@ const FileIcon: React.FC<FileIconProps> = ({ item, onClick }) => {
       case FileType.IMAGE: return <ImageIcon />;
       case FileType.TEXT: return <TextIcon />;
       case FileType.APP: return <AppIcon />;
+      case FileType.CERTIFICATE: return <CertificateIcon />;
+      case FileType.MUSIC: return <MusicIcon />;
       default: return null;
     }
   };

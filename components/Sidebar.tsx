@@ -1,8 +1,7 @@
-
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FileSystemItem, FileType } from '../types';
-import { FolderIcon, ProjectIcon, ImageIcon, TextIcon, AppIcon } from '../constants';
+import { FolderIcon, ProjectIcon, ImageIcon, TextIcon, AppIcon, CertificateIcon, MusicIcon } from '../constants';
 
 interface SidebarProps {
   fileSystem: FileSystemItem[];
@@ -32,6 +31,8 @@ const TreeItem: React.FC<{
       case FileType.IMAGE: return <ImageIcon className="w-5 h-5" />;
       case FileType.TEXT: return <TextIcon className="w-5 h-5" />;
       case FileType.APP: return <AppIcon className="w-5 h-5" />;
+      case FileType.CERTIFICATE: return <CertificateIcon className="w-5 h-5" />;
+      case FileType.MUSIC: return <MusicIcon className="w-5 h-5" />;
       default: return null;
     }
   };

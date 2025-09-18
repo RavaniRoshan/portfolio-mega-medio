@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { FileSystemItem } from '../types';
@@ -19,6 +18,7 @@ interface MainContentProps {
   navigateTo: (path: string[]) => void;
   onNavigateToProjects: () => void;
   onOpenAboutFile: () => void;
+  onOpenCertificatesFile: () => void;
 }
 
 const MainContent: React.FC<MainContentProps> = ({
@@ -33,6 +33,7 @@ const MainContent: React.FC<MainContentProps> = ({
   navigateTo,
   onNavigateToProjects,
   onOpenAboutFile,
+  onOpenCertificatesFile,
 }) => {
   const containerVariants = {
     hidden: { opacity: 0, y: 20 },
@@ -58,6 +59,7 @@ const MainContent: React.FC<MainContentProps> = ({
             <LandingPage
               onNavigateToProjects={onNavigateToProjects}
               onOpenAboutFile={onOpenAboutFile}
+              onOpenCertificatesFile={onOpenCertificatesFile}
             />
           </motion.div>
         ) : isAiGeneratorActive ? (

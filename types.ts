@@ -1,10 +1,11 @@
-
 export enum FileType {
   FOLDER = 'folder',
   PROJECT = 'project',
   IMAGE = 'image',
   TEXT = 'text',
   APP = 'app',
+  CERTIFICATE = 'certificate',
+  MUSIC = 'music',
 }
 
 export interface FileSystemItem {

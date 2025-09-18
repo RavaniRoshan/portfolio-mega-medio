@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FileSystemItem, FileType } from './types';
@@ -88,6 +87,12 @@ const App: React.FC = () => {
           openFile(aboutFile);
       }
   };
+  const handleOpenCertificatesFile = () => {
+      const certFile = findItemByPath(['root', 'certificates'], fileSystem);
+      if(certFile) {
+          openFile(certFile);
+      }
+  };
 
   const currentDirectory = findItemByPath(currentPath, fileSystem);
   const parentDirectory = findParentByPath(currentPath, fileSystem);
@@ -130,6 +135,7 @@ const App: React.FC = () => {
           navigateTo={navigateTo}
           onNavigateToProjects={handleNavigateToProjects}
           onOpenAboutFile={handleOpenAboutFile}
+          onOpenCertificatesFile={handleOpenCertificatesFile}
         />
       </div>
       <button 

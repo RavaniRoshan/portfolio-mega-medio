@@ -1,9 +1,10 @@
-import React from 'react';
-import { motion, Variants } from 'framer-motion';
+import React, { useRef, useEffect } from 'react';
+import { motion, useScroll, useTransform, Variants, useInView, animate, useMotionValue } from 'framer-motion';
 
 interface LandingPageProps {
   onNavigateToProjects: () => void;
   onOpenAboutFile: () => void;
+  onOpenCertificatesFile: () => void;
 }
 
 const GithubIcon = () => (
@@ -18,108 +19,124 @@ const LinkedInIcon = () => (
     </svg>
 );
 
-const TwitterIcon = () => (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-6 w-6">
-        <path d="M22.46 6c-.77.35-1.6.58-2.46.69.88-.53 1.56-1.37 1.88-2.38-.83.5-1.75.85-2.72 1.05C18.37 4.5 17.26 4 16 4c-2.35 0-4.27 1.92-4.27 4.29 0 .34.04.67.11.98-3.56-.18-6.72-1.89-8.83-4.48-.37.63-.58 1.37-.58 2.15 0 1.49.76 2.81 1.91 3.58-.7-.02-1.37-.21-1.95-.54v.05c0 2.08 1.48 3.82 3.44 4.21-.36.1-.74.15-1.14.15-.28 0-.55-.03-.81-.08.55 1.7 2.14 2.94 4.03 2.97-1.47 1.15-3.33 1.84-5.35 1.84-.35 0-.69-.02-1.03-.06 1.9 1.23 4.15 1.95 6.56 1.95 7.88 0 12.19-6.54 12.19-12.2 0-.19 0-.37-.01-.56.84-.6 1.56-1.36 2.14-2.22z" />
-    </svg>
-);
+const AnimatedStat = ({ value, label, suffix = '' }: { value: number, label: string, suffix?: string }) => {
+    const ref = useRef(null);
+    const isInView = useInView(ref, { once: true, margin: "-100px" });
+    const count = useMotionValue(0);
+    const rounded = useTransform(count, latest => Math.round(latest));
+
+    useEffect(() => {
+        if (isInView) {
+            animate(count, value, { duration: 2, ease: "easeOut" });
+        }
+    }, [isInView, value, count]);
+
+    return (
+        <div ref={ref} className="text-center p-4 rounded-lg bg-white/5 backdrop-blur-sm border border-white/10">
+            <h3 className="text-4xl md:text-5xl font-bold text-blue-400">
+                <motion.span>{rounded}</motion.span>{suffix}+
+            </h3>
+            <p className="mt-2 text-sm text-gray-400">{label}</p>
+        </div>
+    );
+};
 
 
-const LandingPage: React.FC<LandingPageProps> = ({ onNavigateToProjects, onOpenAboutFile }) => {
-  const parentContainerVariants: Variants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: { staggerChildren: 0.2, delayChildren: 0.3 },
-    },
-  };
+const LandingPage: React.FC<LandingPageProps> = ({ onNavigateToProjects, onOpenAboutFile, onOpenCertificatesFile }) => {
+  const scrollRef = useRef(null);
+  const { scrollYProgress } = useScroll({
+    target: scrollRef,
+    offset: ["start start", "end start"]
+  });
+
+  const bgY1 = useTransform(scrollYProgress, [0, 1], ["0%", "50%"]);
+  const bgY2 = useTransform(scrollYProgress, [0, 1], ["0%", "-30%"]);
   
-  const itemVariants: Variants = {
-    hidden: { opacity: 0, y: 20 },
+  const skills = ['Python', 'JavaScript', 'Rust', 'React', 'AI/ML', 'Full-Stack'];
+  const achievements = ['Building innovative AI solutions', 'Active open-source contributions', 'Winning hackathons and competitions', 'Committed to continuous learning'];
+
+  const sectionVariants: Variants = {
+    hidden: { opacity: 0, y: 50 },
     visible: {
       opacity: 1,
       y: 0,
-      transition: { type: 'spring', stiffness: 100 },
+      transition: { duration: 0.6, ease: 'easeOut' },
     },
   };
-  
-  const skills = ['React', 'TypeScript', 'Node.js', 'Framer Motion', 'Tailwind CSS', 'Gemini API'];
 
   return (
-    <div className="relative w-full h-full flex flex-col justify-between p-6 md:p-8 overflow-y-auto">
-      <div className="absolute top-6 left-6 flex space-x-4 z-10">
-        <motion.button
-          onClick={onNavigateToProjects}
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          className="px-6 py-3 rounded-lg bg-white/10 backdrop-blur-md border border-white/20 shadow-lg text-gray-800 dark:text-gray-200 font-semibold transition-colors duration-300 hover:bg-white/20"
-        >
-          Projects
-        </motion.button>
-        <motion.button
-          onClick={onOpenAboutFile}
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          className="px-6 py-3 rounded-lg bg-white/10 backdrop-blur-md border border-white/20 shadow-lg text-gray-800 dark:text-gray-200 font-semibold transition-colors duration-300 hover:bg-white/20"
-        >
-          About
-        </motion.button>
-      </div>
-
+    <div ref={scrollRef} className="relative w-full h-full flex flex-col overflow-y-auto">
       <motion.div 
-        className="flex-grow flex flex-col md:flex-row items-center justify-center gap-8 md:gap-16 pt-20"
-        variants={parentContainerVariants}
-        initial="hidden"
-        animate="visible"
-      >
-        <div className="w-full md:w-1/2 text-center md:text-left">
-          <motion.h1 variants={itemVariants} className="text-4xl md:text-6xl font-bold text-gray-800 dark:text-gray-100">
-            Ravani Roshan
-          </motion.h1>
-          <motion.h2 variants={itemVariants} className="mt-2 text-xl md:text-2xl font-medium text-blue-500 dark:text-blue-400">
-            Senior Frontend Engineer
-          </motion.h2>
-          <motion.p variants={itemVariants} className="mt-6 text-base md:text-lg text-gray-600 dark:text-gray-400 max-w-xl mx-auto md:mx-0">
-            Crafting beautiful, intuitive, and performant user experiences. I specialize in building modern web applications with a focus on clean code and delightful animations.
-          </motion.p>
-          
-          <motion.div variants={itemVariants} className="mt-8">
-             <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-4">Core Technologies</h3>
-             <div className="flex flex-wrap gap-2 justify-center md:justify-start">
-              {skills.map(skill => (
-                <div key={skill} className="px-4 py-2 rounded-md bg-black/5 dark:bg-white/10 text-sm font-medium">
-                  {skill}
-                </div>
-              ))}
-             </div>
-          </motion.div>
+        style={{ y: bgY1 }}
+        className="absolute top-[-20%] left-[5%] w-72 h-72 bg-purple-500/20 dark:bg-purple-500/30 rounded-full filter blur-3xl opacity-50 will-change-transform" 
+      />
+      <motion.div 
+        style={{ y: bgY2 }}
+        className="absolute bottom-[-10%] right-[5%] w-96 h-96 bg-blue-500/20 dark:bg-blue-500/30 rounded-full filter blur-3xl opacity-50 will-change-transform" 
+      />
+      
+      <header className="px-6 md:px-8 pt-6 md:pt-8 z-10">
+        <div className="flex space-x-2 md:space-x-4">
+            <motion.button onClick={onNavigateToProjects} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className="px-4 py-2 text-sm md:px-5 md:py-2.5 rounded-full font-semibold transition-colors duration-300 bg-black/5 dark:bg-white/5 backdrop-blur-lg border border-black/10 dark:border-white/10 hover:bg-black/10 dark:hover:bg-white/10">Projects</motion.button>
+            <motion.button onClick={onOpenAboutFile} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className="px-4 py-2 text-sm md:px-5 md:py-2.5 rounded-full font-semibold transition-colors duration-300 bg-black/5 dark:bg-white/5 backdrop-blur-lg border border-black/10 dark:border-white/10 hover:bg-black/10 dark:hover:bg-white/10">About</motion.button>
+            <motion.button onClick={onOpenCertificatesFile} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className="px-4 py-2 text-sm md:px-5 md:py-2.5 rounded-full font-semibold transition-colors duration-300 bg-black/5 dark:bg-white/5 backdrop-blur-lg border border-black/10 dark:border-white/10 hover:bg-black/10 dark:hover:bg-white/10">Certificates</motion.button>
         </div>
+      </header>
 
-        <motion.div variants={itemVariants} className="w-full md:w-1/3 flex flex-col items-center justify-center gap-8">
-            <motion.div 
-              className="w-48 h-48 md:w-64 md:h-64 relative flex items-center justify-center"
-              animate={{ rotate: 360 }}
-              transition={{ duration: 30, repeat: Infinity, ease: 'linear' }}
-            >
-              <div className="absolute w-full h-full rounded-full border-2 border-dashed border-blue-500/50 animate-pulse"></div>
-              <div className="absolute w-3/4 h-3/4 rounded-full border-2 border-dashed border-purple-500/50 animate-pulse" style={{animationDelay: '1s'}}></div>
-              <svg className="w-24 h-24 text-gray-700 dark:text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
-              </svg>
+      <main className="px-6 md:px-8 z-10">
+        {/* Hero Section */}
+        <section className="min-h-screen flex flex-col items-center justify-center text-center relative">
+            <motion.div initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.8, delay: 0.2, type: 'spring' }}>
+                <h1 className="text-5xl md:text-7xl font-bold text-gray-800 dark:text-gray-100">Ravani Roshan</h1>
+                <h2 className="mt-3 text-xl md:text-2xl font-medium text-blue-500 dark:text-blue-400">Computer Science & Engineering Student</h2>
+                <p className="mt-6 text-base md:text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
+                    Highly motivated student with expertise in full-stack development and artificial intelligence. Passionate about building innovative applications and contributing to open-source.
+                </p>
+                <div className="mt-8 flex justify-center space-x-6">
+                    <motion.a href="https://github.com/RavaniRoshan" target="_blank" rel="noopener noreferrer" whileHover={{ y: -4 }} className="p-3 rounded-full bg-white/10 backdrop-blur-md border border-white/20 shadow-lg text-gray-800 dark:text-gray-200"><GithubIcon /></motion.a>
+                    <motion.a href="https://www.linkedin.com/in/roshan-ravani-3a79882a3/" target="_blank" rel="noopener noreferrer" whileHover={{ y: -4 }} className="p-3 rounded-full bg-white/10 backdrop-blur-md border border-white/20 shadow-lg text-gray-800 dark:text-gray-200"><LinkedInIcon /></motion.a>
+                </div>
             </motion.div>
-            <div className="flex space-x-6">
-                <motion.a href="https://github.com" target="_blank" rel="noopener noreferrer" whileHover={{ y: -4 }} className="p-3 rounded-full bg-white/10 backdrop-blur-md border border-white/20 shadow-lg text-gray-800 dark:text-gray-200">
-                    <GithubIcon />
-                </motion.a>
-                <motion.a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" whileHover={{ y: -4 }} className="p-3 rounded-full bg-white/10 backdrop-blur-md border border-white/20 shadow-lg text-gray-800 dark:text-gray-200">
-                    <LinkedInIcon />
-                </motion.a>
-                <motion.a href="https://twitter.com" target="_blank" rel="noopener noreferrer" whileHover={{ y: -4 }} className="p-3 rounded-full bg-white/10 backdrop-blur-md border border-white/20 shadow-lg text-gray-800 dark:text-gray-200">
-                    <TwitterIcon />
-                </motion.a>
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 1, delay: 1 }} className="absolute bottom-10 animate-bounce">
+                <svg className="w-6 h-6 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" /></svg>
+            </motion.div>
+        </section>
+
+        {/* Stats Section */}
+        <motion.section variants={sectionVariants} initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.3 }} className="py-20 md:py-32">
+             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8 max-w-4xl mx-auto">
+                <AnimatedStat value={1200} label="GitHub Commits" />
+                <AnimatedStat value={8} label="AI Models Fine-Tuned" />
+                <AnimatedStat value={3} label="Hackathons Won" />
+                <AnimatedStat value={120} label="Typing Speed (WPM)" suffix=" " />
+             </div>
+        </motion.section>
+
+        {/* Achievements & Skills Section */}
+        <motion.section variants={sectionVariants} initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.3 }} className="py-20 md:py-32 grid md:grid-cols-2 gap-16 items-center max-w-6xl mx-auto">
+            <div>
+                 <h3 className="text-3xl font-bold mb-6">Key Achievements</h3>
+                 <ul className="space-y-4">
+                    {achievements.map((ach, i) => (
+                        <motion.li key={i} custom={i} variants={{ hidden: {opacity: 0, x: -20}, visible: {opacity: 1, x: 0, transition: {delay: i * 0.15}}}} initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.5 }} className="flex items-start">
+                            <svg className="w-6 h-6 text-green-500 mr-3 flex-shrink-0 mt-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                            <span>{ach}</span>
+                        </motion.li>
+                    ))}
+                 </ul>
             </div>
-        </motion.div>
-      </motion.div>
+             <div>
+                <h3 className="text-3xl font-bold mb-6">Core Technologies</h3>
+                <div className="flex flex-wrap gap-3">
+                {skills.map((skill, i) => (
+                    <motion.div key={skill} custom={i} variants={{ hidden: {opacity: 0, scale: 0.8}, visible: {opacity: 1, scale: 1, transition: {delay: i * 0.1}}}} initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.5 }} className="px-4 py-2 rounded-lg bg-black/5 dark:bg-white/10 text-md font-medium">
+                    {skill}
+                    </motion.div>
+                ))}
+                </div>
+            </div>
+        </motion.section>
+      </main>
     </div>
   );
 };
