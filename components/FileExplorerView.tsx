@@ -8,9 +8,11 @@ import { initialFileSystem } from '../constants';
 interface FileIconProps {
   item: FileSystemItem;
   onClick: () => void;
+  setPreviewItem: (item: FileSystemItem | null) => void;
 }
 
-const FileIcon: React.FC<FileIconProps> = ({ item, onClick }) => {
+const FileIcon: React.FC<FileIconProps> = ({ item, onClick, setPreviewItem }) => {
+
   const getIcon = (type: FileType) => {
     switch (type) {
       case FileType.FOLDER: return <FolderIcon />;
@@ -34,9 +36,17 @@ const FileIcon: React.FC<FileIconProps> = ({ item, onClick }) => {
       variants={itemVariants}
       whileHover={{ scale: 1.05, y: -5 }}
       whileTap={{ scale: 0.95 }}
+      onMouseEnter={() => {
+        if (item.type === FileType.IMAGE) {
+          setPreviewItem(item);
+        } else {
+          setPreviewItem(null);
+        }
+      }}
+      onMouseLeave={() => setPreviewItem(null)}
       onClick={onClick}
       onDoubleClick={onClick}
-      className="flex flex-col items-center justify-center text-center p-4 cursor-pointer rounded-lg hover:bg-black/5 dark:hover:bg-white/5 transition-colors duration-200"
+      className="relative flex flex-col items-center justify-center text-center p-4 cursor-pointer rounded-lg hover:bg-black/5 dark:hover:bg-white/5 transition-colors duration-200"
     >
       {getIcon(item.type)}
       <span className="mt-2 text-sm font-medium text-gray-700 dark:text-gray-300 break-words w-24">{item.name}</span>
@@ -80,9 +90,10 @@ interface FileExplorerViewProps {
   currentPath: string[];
   parentDirectory?: FileSystemItem;
   navigateTo: (path: string[]) => void;
+  setPreviewItem: (item: FileSystemItem | null) => void;
 }
 
-const FileExplorerView: React.FC<FileExplorerViewProps> = ({ directory, openFile, goBack, currentPath, parentDirectory, navigateTo }) => {
+const FileExplorerView: React.FC<FileExplorerViewProps> = ({ directory, openFile, goBack, currentPath, parentDirectory, navigateTo, setPreviewItem }) => {
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: { 
@@ -104,13 +115,13 @@ const FileExplorerView: React.FC<FileExplorerViewProps> = ({ directory, openFile
         <main className="flex-1 p-6 overflow-y-auto">
             {directory && directory.type === FileType.FOLDER && directory.children ? (
                 <motion.div 
-                    className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8 gap-4"
+                    className="grid grid-cols-2 xs:grid-cols-3 sm:grid-cols-4 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4"
                     variants={containerVariants}
                     initial="hidden"
                     animate="visible"
                 >
                     {directory.children.map(item => (
-                        <FileIcon key={item.id} item={item} onClick={() => openFile(item)} />
+                        <FileIcon key={item.id} item={item} onClick={() => openFile(item)} setPreviewItem={setPreviewItem} />
                     ))}
                 </motion.div>
             ) : (
