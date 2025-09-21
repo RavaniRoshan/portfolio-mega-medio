@@ -1,4 +1,3 @@
-
 import { FileSystemItem } from '../types';
 
 export const findItemByPath = (path: string[], items: FileSystemItem[]): FileSystemItem | undefined => {
@@ -26,3 +25,32 @@ export const findParentByPath = (path: string[], items: FileSystemItem[]): FileS
     const parentPath = path.slice(0, -1);
     return findItemByPath(parentPath, items);
 }
+
+export interface SearchResult {
+  item: FileSystemItem;
+  path: string[];
+}
+
+export const searchFileSystem = (
+  query: string,
+  items: FileSystemItem[],
+  currentPath: string[] = []
+): SearchResult[] => {
+  if (!query) return [];
+
+  let results: SearchResult[] = [];
+  const lowerCaseQuery = query.toLowerCase();
+
+  for (const item of items) {
+    const itemPath = [...currentPath, item.id];
+    if (item.name.toLowerCase().includes(lowerCaseQuery)) {
+      results.push({ item, path: itemPath });
+    }
+
+    if (item.children && item.children.length > 0) {
+      results = results.concat(searchFileSystem(query, item.children, itemPath));
+    }
+  }
+
+  return results;
+};

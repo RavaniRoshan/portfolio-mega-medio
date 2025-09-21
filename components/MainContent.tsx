@@ -6,6 +6,9 @@ import FileView from './FileView';
 import AIGenerator from './AIGenerator';
 import LandingPage from './LandingPage';
 import PreviewPanel from './PreviewPanel';
+import SearchResultsView from './SearchResultsView';
+import { SearchResult } from '../utils/fileSystemUtils';
+
 
 interface MainContentProps {
   currentDirectory?: FileSystemItem;
@@ -20,6 +23,9 @@ interface MainContentProps {
   onNavigateToProjects: () => void;
   onOpenAboutFile: () => void;
   onOpenCertificatesFile: () => void;
+  searchQuery: string;
+  setSearchQuery: (query: string) => void;
+  searchResults: SearchResult[];
 }
 
 const MainContent: React.FC<MainContentProps> = ({
@@ -35,6 +41,9 @@ const MainContent: React.FC<MainContentProps> = ({
   onNavigateToProjects,
   onOpenAboutFile,
   onOpenCertificatesFile,
+  searchQuery,
+  setSearchQuery,
+  searchResults,
 }) => {
   const [previewItem, setPreviewItem] = useState<FileSystemItem | null>(null);
 
@@ -50,12 +59,30 @@ const MainContent: React.FC<MainContentProps> = ({
 
   const isAiGeneratorActive = activeFile?.type === FileType.APP;
   const isLandingPage = currentPath.length === 1 && currentPath[0] === 'root' && !activeFile;
+  const isSearching = searchQuery.trim() !== '';
 
   return (
     <div className="flex-1 h-full bg-black/5 dark:bg-white/5 backdrop-blur-xl border border-white/10 dark:border-black/10 rounded-2xl shadow-lg flex overflow-hidden">
       <div className="flex-1 flex flex-col min-w-0">
         <AnimatePresence mode="wait">
-          {isLandingPage ? (
+          {isSearching ? (
+            <motion.div
+              key="search-results"
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+              variants={containerVariants}
+              className="w-full h-full"
+            >
+              <SearchResultsView
+                searchQuery={searchQuery}
+                results={searchResults}
+                navigateTo={navigateTo}
+                openFile={openFile}
+                clearSearch={() => setSearchQuery('')}
+              />
+            </motion.div>
+          ) : isLandingPage ? (
             <motion.div
               key="landing-page"
               initial="hidden"
@@ -109,13 +136,15 @@ const MainContent: React.FC<MainContentProps> = ({
                 parentDirectory={parentDirectory}
                 navigateTo={navigateTo}
                 setPreviewItem={setPreviewItem}
+                searchQuery={searchQuery}
+                setSearchQuery={setSearchQuery}
               />
             </motion.div>
           )}
         </AnimatePresence>
       </div>
       <AnimatePresence>
-        {previewItem && !activeFile && (
+        {previewItem && !activeFile && !isSearching && (
           <PreviewPanel item={previewItem} />
         )}
       </AnimatePresence>

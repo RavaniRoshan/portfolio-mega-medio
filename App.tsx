@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FileSystemItem, FileType } from './types';
 import { initialFileSystem } from './constants';
@@ -6,7 +6,7 @@ import Sidebar from './components/Sidebar';
 import MainContent from './components/MainContent';
 import Background from './components/Background';
 import ThemeToggle from './components/ThemeToggle';
-import { findItemByPath, findParentByPath } from './utils/fileSystemUtils';
+import { findItemByPath, findParentByPath, searchFileSystem, SearchResult } from './utils/fileSystemUtils';
 
 const App: React.FC = () => {
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
@@ -15,6 +15,7 @@ const App: React.FC = () => {
   const [activeFile, setActiveFile] = useState<FileSystemItem | null>(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [expandedFolders, setExpandedFolders] = useState<string[]>(['root']);
+  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
     if (theme === 'dark') {
@@ -28,9 +29,15 @@ const App: React.FC = () => {
     setTheme(prevTheme => (prevTheme === 'light' ? 'dark' : 'light'));
   };
 
+  const searchResults = useMemo(() => {
+    if (!searchQuery.trim()) return [];
+    return searchFileSystem(searchQuery, fileSystem);
+  }, [searchQuery, fileSystem]);
+
   const navigateTo = useCallback((path: string[]) => {
     setActiveFile(null);
     setCurrentPath(path);
+    setSearchQuery(''); // Clear search on navigation
     // Also expand the folders in the path
     setExpandedFolders(prev => {
         const newExpanded = new Set(prev);
@@ -46,6 +53,7 @@ const App: React.FC = () => {
     } else {
       setActiveFile(file);
     }
+    setSearchQuery(''); // Clear search on file open
   }, []);
 
   const closeFile = useCallback(() => {
@@ -136,6 +144,9 @@ const App: React.FC = () => {
           onNavigateToProjects={handleNavigateToProjects}
           onOpenAboutFile={handleOpenAboutFile}
           onOpenCertificatesFile={handleOpenCertificatesFile}
+          searchQuery={searchQuery}
+          setSearchQuery={setSearchQuery}
+          searchResults={searchResults}
         />
       </div>
       <button 

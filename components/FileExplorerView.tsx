@@ -67,7 +67,7 @@ const Breadcrumbs: React.FC<BreadcrumbsProps> = ({ currentPath, navigateTo }) =>
     });
 
     return (
-        <nav className="flex items-center text-sm text-gray-500 dark:text-gray-400">
+        <nav className="flex items-center text-sm text-gray-500 dark:text-gray-400 truncate">
             {pathItems.map((item, index) => (
                 <React.Fragment key={index}>
                     <span 
@@ -91,9 +91,11 @@ interface FileExplorerViewProps {
   parentDirectory?: FileSystemItem;
   navigateTo: (path: string[]) => void;
   setPreviewItem: (item: FileSystemItem | null) => void;
+  searchQuery: string;
+  setSearchQuery: (query: string) => void;
 }
 
-const FileExplorerView: React.FC<FileExplorerViewProps> = ({ directory, openFile, goBack, currentPath, parentDirectory, navigateTo, setPreviewItem }) => {
+const FileExplorerView: React.FC<FileExplorerViewProps> = ({ directory, openFile, goBack, currentPath, parentDirectory, navigateTo, setPreviewItem, searchQuery, setSearchQuery }) => {
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: { 
@@ -104,13 +106,30 @@ const FileExplorerView: React.FC<FileExplorerViewProps> = ({ directory, openFile
   
   return (
     <div className="flex flex-col h-full w-full">
-        <header className="flex items-center p-4 border-b border-black/10 dark:border-white/10 flex-shrink-0">
-            <button onClick={goBack} disabled={currentPath.length <= 1} className="p-1 rounded-full hover:bg-black/10 dark:hover:bg-white/10 disabled:opacity-50 disabled:cursor-not-allowed mr-4">
+        <header className="flex items-center p-4 border-b border-black/10 dark:border-white/10 flex-shrink-0 gap-4">
+            <button onClick={goBack} disabled={currentPath.length <= 1} className="p-1 rounded-full hover:bg-black/10 dark:hover:bg-white/10 disabled:opacity-50 disabled:cursor-not-allowed">
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                 </svg>
             </button>
-            <Breadcrumbs currentPath={currentPath} navigateTo={navigateTo} />
+            <div className="flex-grow min-w-0">
+              <Breadcrumbs currentPath={currentPath} navigateTo={navigateTo} />
+            </div>
+            <div className="relative flex-shrink-0">
+                <input
+                    type="text"
+                    placeholder="Search..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-40 sm:w-48 bg-black/5 dark:bg-white/5 rounded-md py-1.5 pl-8 pr-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                    aria-label="Search portfolio"
+                />
+                <div className="absolute inset-y-0 left-0 flex items-center pl-2.5 pointer-events-none text-gray-400 dark:text-gray-500">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                </div>
+            </div>
         </header>
         <main className="flex-1 p-6 overflow-y-auto">
             {directory && directory.type === FileType.FOLDER && directory.children ? (
